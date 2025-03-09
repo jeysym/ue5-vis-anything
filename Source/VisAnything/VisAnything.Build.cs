@@ -26,11 +26,14 @@ public class VisAnything : ModuleRules
 			new string[]
 			{
 				"Core",
-				"UnrealEd",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
-			
+
+		if (Target.bCompileAgainstEditor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
 		
 		PrivateDependencyModuleNames.AddRange(
 			new string[]

@@ -1,6 +1,8 @@
 #include "VisAnythingVisualizer.h"
 #include "VisAnythingComponent.h"
 #include "VisAnything.h"
+
+#if WITH_EDITOR
 #include "CanvasTypes.h"
 #include "CanvasItem.h"
 
@@ -123,3 +125,4 @@ void FVisAnythingVisualizer::DrawVisualizationHUD(const UActorComponent* Compone
 		}
 	}
 }
+#endif
