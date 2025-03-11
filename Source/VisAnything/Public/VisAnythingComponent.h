@@ -59,6 +59,9 @@ public:
 	TSubclassOf<UActorComponent> ComponentClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FPropertyVisConfig DefaultPropertyConfig;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FString, FPropertyVisConfig> PropertyConfigs;
 
 	TArray<const UObject*> GetReflectedObjects() const;

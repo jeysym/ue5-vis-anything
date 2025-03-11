@@ -43,8 +43,19 @@ IMPLEMENT_MODULE(FVisAnythingModule, VisAnything)
 
 static FString GetPropertyName(const FProperty* Prop)
 {
+	check(Prop);
 #if WITH_EDITOR
-	return Prop->GetDisplayNameText().ToString();
+	FString Name = Prop->GetName();
+	if (Name.Len() > 32)
+	{
+		// Some blueprint generated properties have long generated names.
+		return Prop->GetDisplayNameText().ToString();
+	}
+	else
+	{
+		return Name;
+	}
+	return Prop->GetName();
 #else
 	return Prop->GetName();
 #endif
@@ -54,7 +65,9 @@ static void CrawlProperty(TArray<FReflectedVector>& Out, const FProperty* Prop, 
 
 static void CrawlStruct(TArray<FReflectedVector>& Out, const FStructProperty* Prop, const void* ContainerPtr, FString Path, TArray<FArrayAccess> ArrayMetadata)
 {
+	check(Prop && ContainerPtr);
 	const void* StructPtr = Prop->ContainerPtrToValuePtr<const void*>(ContainerPtr);
+	check(StructPtr);
 	const UScriptStruct* StructStruct = Prop->Struct;
 
 	if (Prop->GetCPPType(nullptr, 0) == TEXT("FVector"))
@@ -69,6 +82,7 @@ static void CrawlStruct(TArray<FReflectedVector>& Out, const FStructProperty* Pr
 
 	for (TFieldIterator<FProperty> It(StructStruct); It; ++It)
 	{
+		check(*It);
 		FString Path2 = FString::Printf(TEXT("%s.%s"), *Path, *GetPropertyName(*It));
 		CrawlProperty(Out, *It, StructPtr, Path2, ArrayMetadata);
 	}
@@ -76,11 +90,14 @@ static void CrawlStruct(TArray<FReflectedVector>& Out, const FStructProperty* Pr
 
 static void CrawlArray(TArray<FReflectedVector>& Out, const FArrayProperty* Prop, const void* ContainerPtr, FString Path, TArray<FArrayAccess> ArrayMetadata)
 {
+	check(Prop && ContainerPtr);
 	const void* ArrayPtr = Prop->ContainerPtrToValuePtr<const void*>(ContainerPtr);
+	check(ArrayPtr);
 	FScriptArrayHelper Helper(Prop, ArrayPtr);
 
 	for (int32 Idx = 0; Idx < Helper.Num(); ++Idx)
 	{
+		check(Prop->Inner);
 		TArray<FArrayAccess> ArrayMetadata2 = ArrayMetadata;
 		ArrayMetadata2.Emplace(GetPropertyName(Prop->Inner), Idx);
 		CrawlProperty(Out, Prop->Inner, Helper.GetRawPtr(Idx), FString::Printf(TEXT("%s[%d]"), *Path, Idx), ArrayMetadata2);
@@ -89,6 +106,8 @@ static void CrawlArray(TArray<FReflectedVector>& Out, const FArrayProperty* Prop
 
 static void CrawlProperty(TArray<FReflectedVector>& Out, const FProperty* Prop, const void* ContainerPtr, FString Path, TArray<FArrayAccess> ArrayMetadata)
 {
+	check(Prop && ContainerPtr);
+
 	if (const FStructProperty* StructProp = CastField<FStructProperty>(Prop))
 	{
 		CrawlStruct(Out, StructProp, ContainerPtr, Path, ArrayMetadata);
@@ -102,6 +121,7 @@ static void CrawlProperty(TArray<FReflectedVector>& Out, const FProperty* Prop, 
 
 TArray<FReflectedVector> ReflectAllVectorFields(const UObject* Obj)
 {
+	check(Obj);
 	TArray<FReflectedVector> Result;
 
 	for (TFieldIterator<FProperty> FieldIt(Obj->GetClass()); FieldIt; ++FieldIt) {

@@ -14,13 +14,16 @@ TArray<const UObject*> UVisAnythingComponent::GetReflectedObjects() const
 
 	if (bReflectActor)
 	{
-		Result.Add(GetOwner());
+		const AActor* Owner = GetOwner();
+		check(Owner);
+		Result.Add(Owner);
 	}
 
 	if (bReflectComponent && ComponentClass.Get())
 	{
 		const UObject* Component = GetOwner()->FindComponentByClass(ComponentClass);
-		Result.Add(Component);
+		if (Component)
+			Result.Add(Component);
 	}
 
 	return Result;
@@ -28,8 +31,6 @@ TArray<const UObject*> UVisAnythingComponent::GetReflectedObjects() const
 
 const FPropertyVisConfig& UVisAnythingComponent::GetConfigForProperty(const FString& PropName) const
 {
-	static FPropertyVisConfig DefaultConfig;
-
 	const FPropertyVisConfig* Config = PropertyConfigs.Find(PropName);
-	return (Config) ? *Config : DefaultConfig;
+	return (Config) ? *Config : DefaultPropertyConfig;
 }
