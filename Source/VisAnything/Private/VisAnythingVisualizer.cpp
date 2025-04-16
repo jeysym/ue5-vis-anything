@@ -75,6 +75,14 @@ void FVisAnythingVisualizer::DrawVisualizationHUD(const UActorComponent* Compone
 	{
 		auto RefVecs = ReflectAllVectorFields(Obj);
 
+		struct FVectorGroup
+		{
+			FVector WorldPos = FVector::Zero();
+			TArray<FReflectedVector> RefVecs;
+		};
+
+		TArray<FVectorGroup> VecGroups;
+
 		for (auto& RefVec : RefVecs)
 		{
 			const FPropertyVisConfig& VisConfig = Comp->GetConfigForProperty(RefVec.Name);
@@ -113,12 +121,49 @@ void FVisAnythingVisualizer::DrawVisualizationHUD(const UActorComponent* Compone
 
 			WorldPos += VisConfig.VisOffset;
 
+			bool bGroupFound = false;
+			for (auto& VecGroup : VecGroups)
+			{
+				if (VecGroup.WorldPos.Equals(WorldPos))
+				{
+					VecGroup.RefVecs.Add(RefVec);
+					bGroupFound = true;
+				}
+			}
+
+			if (!bGroupFound)
+			{
+				FVectorGroup NewGroup;
+				NewGroup.WorldPos = WorldPos;
+				NewGroup.RefVecs.Add(RefVec);
+				VecGroups.Add(NewGroup);
+			}
+		}
+
+		for (const auto& VecGroup : VecGroups)
+		{
 			FVector2D PixelPos;
-			View->WorldToPixel(WorldPos, PixelPos);
+			View->WorldToPixel(VecGroup.WorldPos, PixelPos);
+
+			FString Text;
+
+			if (VecGroup.RefVecs.Num() == 1)
+			{
+				Text += Comp->bDisplayFullPath ? RefVecs[1].FullName : RefVecs[1].Name;
+			}
+			else
+			{
+				for (const auto& RefVec : VecGroup.RefVecs)
+				{
+					Text += TEXT("+ ");
+					Text += Comp->bDisplayFullPath ? RefVec.FullName : RefVec.Name;
+					Text += TEXT("\n");
+				}
+			}
 
 			FCanvasTextItem TextItem(
 				PixelPos,
-				FText::FromString(Comp->bDisplayFullPath ? RefVec.FullName : RefVec.Name),
+				FText::FromString(Text),
 				GEngine->GetMediumFont(),
 				FLinearColor::Black);
 			Canvas->DrawItem(TextItem);
