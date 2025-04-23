@@ -48,7 +48,7 @@ void FVisAnythingVisualizer::DrawVisualization(const UActorComponent* Component,
 				WorldPos = Owner->GetTransform().TransformPosition(*RefVec.Value);
 				break;
 			case EVisVectorSpace::ComponentSpace:
-				if (const USceneComponent* SceneComp = Cast<USceneComponent>(Comp))
+				if (const USceneComponent* SceneComp = Cast<USceneComponent>(Obj))
 				{
 					WorldPos = SceneComp->GetComponentTransform().TransformPosition(*RefVec.Value);
 				}
@@ -112,7 +112,7 @@ void FVisAnythingVisualizer::DrawVisualizationHUD(const UActorComponent* Compone
 				WorldPos = Owner->GetTransform().TransformPosition(*RefVec.Value);
 				break;
 			case EVisVectorSpace::ComponentSpace:
-				if (const USceneComponent* SceneComp = Cast<USceneComponent>(Comp))
+				if (const USceneComponent* SceneComp = Cast<USceneComponent>(Obj))
 				{
 					WorldPos = SceneComp->GetComponentTransform().TransformPosition(*RefVec.Value);
 				}
@@ -149,7 +149,7 @@ void FVisAnythingVisualizer::DrawVisualizationHUD(const UActorComponent* Compone
 
 			if (VecGroup.RefVecs.Num() == 1)
 			{
-				Text += Comp->bDisplayFullPath ? RefVecs[1].FullName : RefVecs[1].Name;
+				Text += Comp->bDisplayFullPath ? VecGroup.RefVecs[0].FullName : VecGroup.RefVecs[0].Name;
 			}
 			else
 			{

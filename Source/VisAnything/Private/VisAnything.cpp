@@ -41,6 +41,8 @@ void FVisAnythingModule::ShutdownModule()
 	
 IMPLEMENT_MODULE(FVisAnythingModule, VisAnything)
 
+// FField::GetName contains unreachable code that is inlined here, triggering a warning.
+#pragma warning(disable : 4702)
 static FString GetPropertyName(const FProperty* Prop)
 {
 	check(Prop);
@@ -60,6 +62,7 @@ static FString GetPropertyName(const FProperty* Prop)
 	return Prop->GetName();
 #endif
 }
+#pragma warning(default : 4702)
 
 static void CrawlProperty(TArray<FReflectedVector>& Out, const FProperty* Prop, const void* ContainerPtr, FString Path, TArray<FArrayAccess> ArrayMetadata);
 
